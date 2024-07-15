@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "pattern"
+version = "0.1.0"
+description = ""
+authors = ["LonelyAvon <92423766+LonelyAvon@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+alembic = "^1.13.2"
+fastapi = "^0.111.0"
+sqlalchemy = "^2.0.31"
+yarl = "^1.9.4"
+pydantic = "^2.8.2"
+pydantic-settings = "^2.3.4"
+asyncpg = "^0.29.0"
+uvicorn = "^0.30.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
