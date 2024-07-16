@@ -119,5 +119,5 @@ cython_debug/
 /qodana.yaml
 
 # rsa keys
-/certs
+*.pem
 

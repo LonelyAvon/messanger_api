@@ -1,5 +1,4 @@
 from sqlalchemy.orm import DeclarativeBase
-
 from app.db.metadata import meta
 
 

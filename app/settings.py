@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 from yarl import URL
 from enum import Enum
+from .api.authorization.settings import AuthJWT
 
 class LogLevel(str, Enum):
     """Possible log levels."""
@@ -35,6 +36,7 @@ class Settings(BaseSettings):
     postgres_password: str = Field(..., env="POSTGRES_PASSWORD")
     postgres_db: str = Field(..., env="POSTGRES_DB")
 
+    auth_jwt: AuthJWT = AuthJWT()
     @property
     def db_url(self) -> URL:
         """
