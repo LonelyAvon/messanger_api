@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     postgres_password: str = Field(..., env="POSTGRES_PASSWORD")
     postgres_db: str = Field(..., env="POSTGRES_DB")
 
-    auth_jwt: AuthJWT = AuthJWT()
+    auth_jwt: AuthJWT = AuthJWT(acces_token_expiration_minutes=1)
     @property
     def db_url(self) -> URL:
         """

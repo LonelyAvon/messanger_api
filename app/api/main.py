@@ -1,10 +1,11 @@
 from sqlite3 import IntegrityError
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from starlette.middleware.cors import CORSMiddleware
+from app.api.schemas.user import UserRead
 from app.settings import settings
 from .routers import api_router
 from sqlalchemy.exc import IntegrityError
-
+from .authorization.func import get_current_user
 
 
 
@@ -31,10 +32,9 @@ async def integrity_error_handler(request: Request, exc: IntegrityError):
 
 app.include_router(api_router)
 
-# @app.get("/GET")
-# async def get(request: Request, session:AsyncSession=Depends(get_session)):
-#     users = await UserRepository(session).get_all()
-#     return users
+@app.get("/GET", response_model=UserRead)
+async def get(request: Request, user: UserRead = Depends(get_current_user)):
+    return user
 
 # @app.put("/update", response_model=UserRead)
 # async def put(request: Request, user: UserUpdate, session:AsyncSession=Depends(get_session)):

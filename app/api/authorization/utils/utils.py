@@ -1,6 +1,6 @@
-from fastapi import Form, HTTPException
+from fastapi import HTTPException
 import jwt
-from app.db.db import get_session
+from jwt import InvalidTokenError
 from app.settings import settings
 import bcrypt
 from datetime import datetime, timedelta
@@ -37,11 +37,14 @@ def decode_jwt(
         public_key: str = settings.auth_jwt.public_key_path.read_text(),
         algorithm: str = settings.auth_jwt.algorithm
 ):
-    decoded = jwt.decode(
-        token,
-        public_key,
-        algorithms=[algorithm]
-    )
+    try:
+        decoded = jwt.decode(
+            token,
+            public_key,
+            algorithms=[algorithm]
+        )
+    except InvalidTokenError as e:
+        raise HTTPException(status_code=401, detail="Unauthorized")
     return decoded
 
 def hash_password(password: str) -> bytes:
@@ -51,5 +54,4 @@ def hash_password(password: str) -> bytes:
 
 def validate_password(password: str, hash_password: bytes) -> bool:
     return bcrypt.checkpw(password.encode(), hash_password)
-
 
