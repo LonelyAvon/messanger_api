@@ -29,4 +29,3 @@ async def login(request: Request, user: UserRead = Depends(validate_current_user
     }
     token = utils.encode_jwt(jwt_payload)
     return Token(access_token=token)
-
