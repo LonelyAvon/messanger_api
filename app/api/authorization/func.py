@@ -17,8 +17,7 @@ async def validate_current_user(username: str = Form(), password: str = Form()):
             raise HTTPException(status_code=401, detail="User is archived")
         return user
     
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(OAuth2PasswordBearer(tokenUrl=f"{settings.fast_api_prefix}/auth/login"))):
-    token = credentials.credentials
+async def get_current_user(token: HTTPAuthorizationCredentials = Depends(OAuth2PasswordBearer(tokenUrl=f"{settings.fast_api_prefix}/auth/login"))):
     decoded = decode_jwt(token)
     async for session in get_session():
         user = await UserRepository(session).get_by_id(decoded["sub"])

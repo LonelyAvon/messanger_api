@@ -36,6 +36,9 @@ app.include_router(api_router)
 async def get(request: Request, user: UserRead = Depends(get_current_user)):
     return user
 
+@app.post("/POST", response_model=UserRead)
+async def post(request: Request, user: UserRead = Depends(get_current_user)):
+    return user
 # @app.put("/update", response_model=UserRead)
 # async def put(request: Request, user: UserUpdate, session:AsyncSession=Depends(get_session)):
 #     user = await UserRepository(session).update_one(user)
