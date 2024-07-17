@@ -22,7 +22,7 @@ def encode_jwt(
     to_encode.update({"exp": expire})
     to_encode.update({"iat": now})
 
-
+    
 
     encoded = jwt.encode(
         to_encode,
@@ -30,6 +30,11 @@ def encode_jwt(
         algorithm=algorithm
     )
     return encoded
+
+def create_token(token_type: str, payload: dict):
+    token_payload = payload.copy()
+    token_payload['token_type'] = token_type
+    return token_payload
 
 
 def decode_jwt(
