@@ -1,10 +1,16 @@
 deploy:
-	sudo docker-compose -f docker/docker-compose.yml --project-directory . up --build
+	docker compose -f docker/docker-compose.yml --project-directory . up --build
 
 install:
 	poetry install
 
 dev: install
-	poetry run uvicorn app.api.main:app --host 0.0.0.0 --port 10000 --reload
+	poetry run uvicorn app.api.main:app --host 0.0.0.0 --port 10422 --reload
 db:
-	sudo docker-compose -f docker/docker-compose-dev.yml --project-directory . up --build;
+	docker compose -f docker/docker-compose-dev.yml --project-directory . up --build -d
+
+revision:
+	alembic revision --autogenerate
+
+upgrade:
+	alembic upgrade head
