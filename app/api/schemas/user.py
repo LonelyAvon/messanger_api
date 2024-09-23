@@ -16,7 +16,9 @@ class UserRead(BaseModel):
     surname: str
     name: str
     patronymic: Optional[str] = None
+    role: Optional[str] = "user"
     is_archived: Optional[bool] = False
+
 
 class UserUpdate(BaseModel):
     id: UUID = None

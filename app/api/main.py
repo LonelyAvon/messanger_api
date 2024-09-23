@@ -1,17 +1,19 @@
 from sqlite3 import IntegrityError
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from starlette.middleware.cors import CORSMiddleware
+from app.api.schemas.user import UserRead
+from app.api.schemas.sales_returns import SalesReturnsDay
 from app.settings import settings
 from .routers import api_router
 from sqlalchemy.exc import IntegrityError
-
+from .authorization.func import get_current_user
 
 
 
 app = FastAPI(
-    title=settings.fast_api_title, 
+    title=settings.PROJECT_TITLE, 
     version="1.0.0",
-    root_path=settings.fast_api_prefix
+    root_path=settings.FAST_API_PREFIX
     )
 
 app.add_middleware(
@@ -31,14 +33,10 @@ async def integrity_error_handler(request: Request, exc: IntegrityError):
 
 app.include_router(api_router)
 
-# @app.get("/GET")
-# async def get(request: Request, session:AsyncSession=Depends(get_session)):
-#     users = await UserRepository(session).get_all()
-#     return users
+@app.get("/users/me", response_model=UserRead)
+async def read_users_me(current_user: UserRead = Depends(get_current_user)):
+    return current_user
 
-# @app.put("/update", response_model=UserRead)
-# async def put(request: Request, user: UserUpdate, session:AsyncSession=Depends(get_session)):
-#     user = await UserRepository(session).update_one(user)
-#     await UserRepository(session).commit()
-#     return user
-
+@app.post("/sales_returns/graph", response_model=list[SalesReturnsDay])
+async def sales_returns_graph():
+    pass

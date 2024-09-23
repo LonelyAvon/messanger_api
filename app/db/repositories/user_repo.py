@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from app.db.repositories.abstract_repo import AbstractRepository
 
-from app.db.models.user import User
+from app.db.models.models import User
 from app.api.schemas.user import UserCreate
 from app.api.authorization.utils import utils
 

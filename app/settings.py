@@ -1,3 +1,4 @@
+from pathlib import Path, PosixPath
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 from yarl import URL
@@ -22,21 +23,27 @@ class Settings(BaseSettings):
     with environment variables.
     """
     # FastAPI
-    fast_api_port: str = Field(default="8000", env="FAST_API_PORT")
-    fast_api_title: str = Field(default="FastAPI", env="FAST_API_TITLE")
-    fast_api_prefix: str = Field(default="/api/v1", env="FAST_API_PREFIX")
+    DIRECTORY: PosixPath = Path(__file__).resolve().parent.parent
 
+    PROJECT_TITLE: str
+    # FastAPI
+    FAST_API_PORT: str
+    FAST_API_PREFIX: str
 
     log_level: LogLevel = LogLevel.INFO
-    # Variables for the database
-    postgres_host: str = Field(default="localhost", env="POSTGRES_HOST")
-    postgres_name: str = Field(..., env="POSTGRES_NAME")
-    postgres_port: int = Field(..., env="POSTGRES_PORT")
-    postgres_user: str = Field(..., env="POSTGRES_USER")
-    postgres_password: str = Field(..., env="POSTGRES_PASSWORD")
-    postgres_db: str = Field(..., env="POSTGRES_DB")
+
+    # POSTGRES
+    POSTGRES_HOST: str = "localhost" # for makefile target dev
+    # USE THIS HOW USE FASTAPI IN DOCKER CONTAINER 
+    # POSTGRES_HOST: str = "localhost" # for makefile target deploy
+    # POSTGRES_PORT: int = 5432 # for makefile target deploy
+    POSTGRES_PORT: int
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str 
 
     auth_jwt: AuthJWT = AuthJWT()
+
     @property
     def db_url(self) -> URL:
         """
@@ -46,16 +53,15 @@ class Settings(BaseSettings):
         """
         return URL.build(
             scheme="postgresql+asyncpg",
-            host=self.postgres_host,
-            port=self.postgres_port,
-            user=self.postgres_user,
-            password=self.postgres_password,
-            path=f"/{self.postgres_db}",
+            host=self.POSTGRES_HOST,
+            port=self.POSTGRES_PORT,
+            user=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            path=f"/{self.POSTGRES_DB}",
         )
     
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
     )
-
 settings = Settings()

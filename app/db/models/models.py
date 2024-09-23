@@ -29,4 +29,5 @@ class User(Base):
     surname: Mapped[str] = mapped_column(String(255))
     name: Mapped[str] = mapped_column(String(255))
     patronymic: Mapped[Optional[str]] = mapped_column(String(255))
+    role: Mapped[str] = mapped_column(String(50), server_default="user")
     is_archived: Mapped[bool] = mapped_column(Boolean, server_default='false')

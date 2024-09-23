@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   app:
-    container_name: ${FAST_API_TITLE}_API
+    container_name: ${PROJECT_TITLE}_api
     build:
       context: .
       dockerfile: ./docker/Dockerfile
@@ -16,7 +16,7 @@ services:
 
   db:
     image: postgres:13.8-bullseye
-    container_name: ${FAST_API_TITLE}_DB
+    container_name: ${PROJECT_TITLE}_db
     restart: always
     env_file:
       - .env
