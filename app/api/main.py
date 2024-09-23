@@ -2,7 +2,6 @@ from sqlite3 import IntegrityError
 from fastapi import Depends, FastAPI, HTTPException, Request
 from starlette.middleware.cors import CORSMiddleware
 from app.api.schemas.user import UserRead
-from app.api.schemas.sales_returns import SalesReturnsDay
 from app.settings import settings
 from .routers import api_router
 from sqlalchemy.exc import IntegrityError
@@ -36,7 +35,3 @@ app.include_router(api_router)
 @app.get("/users/me", response_model=UserRead)
 async def read_users_me(current_user: UserRead = Depends(get_current_user)):
     return current_user
-
-@app.post("/sales_returns/graph", response_model=list[SalesReturnsDay])
-async def sales_returns_graph():
-    pass
