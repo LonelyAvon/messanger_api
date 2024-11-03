@@ -1,5 +1,5 @@
 deploy:
-	docker compose --env-file .env.deploy -f docker/docker-compose.yml --project-directory . up --build -d
+	sudo docker compose --env-file .env.deploy -f docker/docker-compose.yml --project-directory . up --build -d
 
 install:
 	poetry install
@@ -15,6 +15,6 @@ revision:
 upgrade:
 	alembic upgrade head
 
-logs:
-	docker logs --tail 10 -f Qrget_api
+# logs:
+# 	docker logs --tail 10 -f Qrget_api
 

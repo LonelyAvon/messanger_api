@@ -3,6 +3,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 from yarl import URL
 from enum import Enum
+
+from app.api.utils.connection_manager import ConnectionManager
 from .api.authorization.settings import AuthJWT
 
 class LogLevel(str, Enum):
@@ -33,16 +35,37 @@ class Settings(BaseSettings):
     log_level: LogLevel = LogLevel.INFO
 
     # POSTGRES
-    POSTGRES_HOST: str = "localhost" # for makefile target dev
-    # USE THIS HOW USE FASTAPI IN DOCKER CONTAINER 
-    # POSTGRES_HOST: str = "localhost" # for makefile target deploy
-    # POSTGRES_PORT: int = 5432 # for makefile target deploy
+    POSTGRES_HOST: str 
     POSTGRES_PORT: int
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str 
 
+    REDIS_HOST: str
+    REDIS_PORT: int
+    REDIS_USER: str
+    REDIS_PASSWORD: str
+
     auth_jwt: AuthJWT = AuthJWT()
+    
+    
+    manager: ConnectionManager = ConnectionManager()
+
+
+    def redis_url(self, db) -> URL:
+        """
+        Assemble redis URL from settings.
+
+        :return: redis URL.
+        """
+        return URL.build(
+            scheme="redis",
+            host=self.REDIS_HOST,
+            port=self.REDIS_PORT,
+            user=None,
+            password=self.REDIS_PASSWORD,
+            path=f"/{db}",
+        )
 
     @property
     def db_url(self) -> URL:
@@ -64,4 +87,6 @@ class Settings(BaseSettings):
         env_file=".env.develop",
         env_file_encoding="utf-8",
     )
+
 settings = Settings()
+print(settings.redis_url(0))
