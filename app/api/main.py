@@ -31,7 +31,3 @@ async def integrity_error_handler(request: Request, exc: IntegrityError):
 
 
 app.include_router(api_router)
-
-@app.get("/users/me", response_model=UserRead)
-async def read_users_me(current_user: UserRead = Depends(get_current_user)):
-    return current_user
