@@ -89,4 +89,3 @@ class Settings(BaseSettings):
     )
 
 settings = Settings()
-print(settings.redis_url(0))
