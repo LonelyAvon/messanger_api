@@ -11,7 +11,7 @@ from app.db.db import get_session
 from app.db.repositories.user_repo import UserRepository
 from sqlalchemy.ext.asyncio import AsyncSession
 import app.api.authorization.utils.utils as utils
-from .func import validate_current_user, refresh_acess_token
+from .func import get_current_user, validate_current_user, refresh_acess_token
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -38,3 +38,7 @@ async def login(response: Response, user: UserRead = Depends(validate_current_us
 @router.get("/refresh", response_model=Token)
 async def refresh(token: Token = Depends(refresh_acess_token)):
     return token
+
+@router.get("/users/me", response_model=UserRead)
+async def read_users_me(current_user: UserRead = Depends(get_current_user)):
+    return current_user

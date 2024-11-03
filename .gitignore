@@ -90,7 +90,8 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 # Environments
-.env
+.env*
+!.env.example
 .venv
 env/
 venv/
@@ -120,5 +121,5 @@ cython_debug/
 
 # rsa keys
 *.pem
+**/versions/*
 
-/versions/*.py

@@ -1,21 +1,21 @@
 version: '3.9'
 
 services:
-  db:
+  postgres:
     image: postgres:13.8-bullseye
     container_name: ${PROJECT_TITLE}_db
     restart: always
     env_file:
-      - .env
+      - .env.develop
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - db:/var/lib/postgresql/data
+      - messanger:/var/lib/postgresql/data
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "5687:5432"
 
 volumes:
-  db:
-    name: db
+  messanger:
+    name: postgres
