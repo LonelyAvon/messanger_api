@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from fastapi import Depends, Form, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2PasswordBearer
 from app.api.authorization.utils.utils import validate_password, decode_jwt, encode_jwt, create_token
@@ -26,10 +27,12 @@ async def get_current_user(access_token: HTTPAuthorizationCredentials = Depends(
     if decoded['token_type'] != 'access':
         raise HTTPException(status_code=401, detail="Invalid token type")
     async for session in get_session():
-        user = await UserRepository(session).get_by_id(decoded["sub"])
+        user: UserRead = await UserRepository(session).get_by_id(decoded["sub"])
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
-        return user
+        updated_user: UserRead = await UserRepository(session).update_one(user.id, last_visit=datetime.now(timezone.utc))
+        await UserRepository(session).commit()
+        return updated_user
 
 async def refresh_acess_token(request: Request):
     cookies = request.cookies

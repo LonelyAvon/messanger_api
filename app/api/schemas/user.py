@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel
 from typing import Optional
 from uuid import UUID
@@ -17,6 +18,7 @@ class UserRead(BaseModel):
     patronymic: Optional[str] = None
     role: Optional[str] = "user"
     is_archived: Optional[bool] = False
+    last_visit: Optional[datetime]
 
 
 class UserUpdate(BaseModel):

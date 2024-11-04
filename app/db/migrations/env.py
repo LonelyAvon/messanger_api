@@ -5,24 +5,30 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from app.settings import Settings
-from app.db.metadata import meta
 from app.db.models import load_all_models
+from app.settings import Settings
+
+from app.db.base import MappedBase
+
+from app.db.models.user import User
+from app.db.models.chat import Chat
+from app.db.models.chat_types import ChatType
+
 
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 config.set_main_option("sqlalchemy.url", f"{Settings().db_url}?async_fallback=True")
-load_all_models()
-# Interpret the config file for Python logging.
+# load_all_models()
 # This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 
-target_metadata = meta
+# target_metadata = meta
 
+target_metadata = MappedBase.metadata
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.

@@ -10,10 +10,10 @@ db:
 	docker compose --env-file .env.develop -f docker/docker-compose-dev.yml --project-directory . up --build -d
 
 revision:
-	alembic revision --autogenerate
+	poetry run alembic revision --autogenerate
 
 upgrade:
-	alembic upgrade head
+	poetry run alembic upgrade head
 
 # logs:
 # 	docker logs --tail 10 -f Qrget_api

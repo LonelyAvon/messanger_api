@@ -29,13 +29,13 @@ class AbstractRepository(ABC):
         return result.scalars().all()
 
     @abstractmethod
-    async def create(self, obj):
-        query = insert(self.model).values(**obj.model_dump()).returning(self.model)
+    async def create(self, **kwargs):
+        query = insert(self.model).values(**kwargs).returning(self.model)
         result = await self._session.execute(query)
         return result.scalars().first()
 
-    async def update_one(self, obj):
-        query = update(self.model).where(self.model.id == obj.id).values(**obj.model_dump()).returning(self.model)
+    async def update_one(self, id, **kwargs):
+        query = update(self.model).where(self.model.id == id).values(**kwargs).returning(self.model)
         result = await self._session.execute(query)
         return result.scalars().first()
 
@@ -43,7 +43,12 @@ class AbstractRepository(ABC):
         result = await self._session.execute(delete(self.model).where(self.model.id == id))
         return result.rowcount
 
-    async def get_by_filter(self, kwargs):
+    async def get_by_filter_all(self, **kwargs):
         query = select(self.model).filter_by(**kwargs)
         result = await self._session.execute(query)
         return result.scalars().all()
+
+    async def get_by_filter_one(self, **kwargs):
+        query = select(self.model).filter_by(**kwargs)
+        result = await self._session.execute(query)
+        return result.scalars().one_or_none()

@@ -6,7 +6,7 @@ from app.api.schemas.user import(
     UserRead,
 )
 from app.api.schemas.token import Token
-from app.db.models.models import User
+from app.db.models.user import User
 from app.db.db import get_session
 from app.db.repositories.user_repo import UserRepository
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -38,7 +38,3 @@ async def login(response: Response, user: UserRead = Depends(validate_current_us
 @router.get("/refresh", response_model=Token)
 async def refresh(token: Token = Depends(refresh_acess_token)):
     return token
-
-@router.get("/users/me", response_model=UserRead)
-async def read_users_me(current_user: UserRead = Depends(get_current_user)):
-    return current_user

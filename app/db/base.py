@@ -1,7 +1,6 @@
 from sqlalchemy import func
-from sqlalchemy.orm import DeclarativeBase
-from app.db.metadata import meta
-from datetime import date, datetime
+from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass, declared_attr
+from datetime import date, datetime, timezone
 from typing import List, Optional
 import uuid
 from sqlalchemy import (
@@ -21,18 +20,38 @@ from sqlalchemy import (
     ARRAY,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-class SqlalchemyBase(DeclarativeBase):
-    """Base for all models."""
 
-    metadata = meta
+class DateTimeMixin(MappedAsDataclass):
+    """Класс данных для mixin даты и времени"""
+
+    created_time: Mapped[datetime] = mapped_column(
+        DateTime(timezone=False),
+        server_default=func.now(), 
+        comment='Время создания'
+    )
+    updated_time: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=False),
+        onupdate=func.now(),
+        sort_order=999,
+        comment='Время обновления'
+    )
 
 
-class Base(SqlalchemyBase):
-    """Base for all models."""
+class MappedBase(DeclarativeBase):
+   
+
+    @declared_attr.directive
+    def __tablename__(cls) -> str:
+        return cls.__name__.lower()
+
+
+class DataClassBase(MappedAsDataclass, MappedBase):
 
     __abstract__ = True
 
-    created_at = mapped_column(DateTime(timezone=False), nullable=False, server_default=func.now())
-    updated_at = mapped_column(
-        DateTime(timezone=False), nullable=False, server_default=func.now(), onupdate=func.now()
-    )
+
+class Base(MappedBase, DateTimeMixin):
+
+    __abstract__ = True
+
+
