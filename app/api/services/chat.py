@@ -1,0 +1,26 @@
+from uuid import UUID
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api.schemas.chat import ChatCreate, ChatRead
+from app.api.schemas.user_chat import UserChatCreate
+from app.api.services.user_chat import UserChatService
+from app.db.repositories.chat import ChatRepository
+
+
+class ChatService:
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+
+    async def create(self, chat: ChatCreate) -> ChatRead:
+        created_chat: ChatRead = await ChatRepository(self.session).create(**chat.model_dump(exclude={"users"}))
+        for user_id in chat.users:
+            user_chat_to_create: UserChatCreate = UserChatCreate(chat_id=created_chat.id, user_id=user_id)
+            await UserChatService(self.session).create(user_chat_to_create)
+        return created_chat
+    
+    async def find_chat_by_users(self, users: list[UUID], name: str) -> ChatRead:
+        chat = await ChatRepository(self.session).get_by_users(users=users, name=name)
+        return chat
+    

@@ -28,7 +28,6 @@ class AbstractRepository(ABC):
         result = await self._session.execute(select(self.model))
         return result.scalars().all()
 
-    @abstractmethod
     async def create(self, **kwargs):
         query = insert(self.model).values(**kwargs).returning(self.model)
         result = await self._session.execute(query)

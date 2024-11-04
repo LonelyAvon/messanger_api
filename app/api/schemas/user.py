@@ -19,6 +19,7 @@ class UserRead(BaseModel):
     role: Optional[str] = "user"
     is_archived: Optional[bool] = False
     last_visit: Optional[datetime]
+    photo: Optional[str] = None
 
 
 class UserUpdate(BaseModel):
@@ -33,3 +34,12 @@ class UserUpdate(BaseModel):
 class UserAuthorization(BaseModel):
     username: str
     password: str
+
+
+
+class ChatUser(BaseModel):
+    id: UUID
+    surname: str
+    name: str
+    patronymic: Optional[str] = None
+    photo: Optional[str] = None

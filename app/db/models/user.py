@@ -21,6 +21,7 @@ from sqlalchemy.dialects.postgresql import BYTEA
 import uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
+from app.db.models.user_chat import UserChat
 
 
 class User(Base):
@@ -34,4 +35,6 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(50), server_default="user", default=None)
     is_archived: Mapped[bool] = mapped_column(Boolean, server_default='false', default=None)
     last_visit: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), default=None)
+    photo: Mapped[Optional[str]] = mapped_column(String(255), default=None)
 
+    user_chats: Mapped[List[UserChat]] = relationship(back_populates="user", default=None) 

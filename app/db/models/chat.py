@@ -26,6 +26,7 @@ from app.db.base import Base
 class Chat(Base):
     __tablename__ = "chats"
     id: Mapped[UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
-    type_id: Mapped[UUID] = mapped_column(UUID, default=None)
+    type: Mapped[str] = mapped_column(String(255), default='person')
+    name: Mapped[str] = mapped_column(String(255), default=None)
 
-    type: Mapped["ChatType"] = relationship(back_populates="chats", default=None) # type: ignore
+    user_chat: Mapped["UserChat"] = relationship(back_populates="chat", default=None) # type: ignore

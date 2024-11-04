@@ -5,14 +5,14 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from app.db.models import load_all_models
 from app.settings import Settings
 
 from app.db.base import MappedBase
 
 from app.db.models.user import User
 from app.db.models.chat import Chat
-from app.db.models.chat_types import ChatType
+from app.db.models.user_chat import UserChat
+# from app.db.models.chat_types import ChatType
 
 
 

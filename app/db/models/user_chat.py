@@ -23,9 +23,13 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 
-class ChatType(Base):
-    __tablename__ = "chat_types"
+class UserChat(Base):
+    __tablename__ = "user_chats"
     id: Mapped[UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
-    name: Mapped[str] = mapped_column(String(255), unique=True, default=None)
 
-    chats: Mapped[List["Chat"]] = relationship(back_populates="type", default=None) # type: ignore
+    chat_id: Mapped[UUID] = mapped_column(ForeignKey("chats.id"), nullable=False, default=None)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), nullable=False, default=None)
+
+    
+    user: Mapped["User"] = relationship(back_populates="user_chats", default=None) # type: ignore
+    chat: Mapped["Chat"] = relationship(back_populates="user_chat", default=None) # type: ignore
