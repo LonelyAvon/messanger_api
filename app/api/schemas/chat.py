@@ -16,8 +16,25 @@ class ChatRead(BaseModel):
     name: str
     type: Literal["person", "group"]
 
+    class Config:
+        from_attributes = True
+
+
+class RedisChatMessage(BaseModel):
+    user_id: Optional[UUID]
+    message: str
+    created_at: datetime = datetime.now(timezone.utc)
 
 class ChatMessage(BaseModel):
     user: Optional[ChatUser] = None
     message: str
     created_at: datetime = datetime.now(timezone.utc)    
+
+class ChatPreview(BaseModel):
+    id: UUID
+    name: str
+    type: Literal["person", "group"]
+    last_message: Optional[ChatMessage] = None
+
+class ChatInfo(ChatRead):
+    messages: Optional[list[ChatMessage]]

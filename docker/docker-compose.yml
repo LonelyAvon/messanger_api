@@ -12,6 +12,8 @@ services:
       - .env.deploy
     ports:
       - ${FAST_API_PORT}:8000
+    volumes:
+      - ../pattern/photos:/app/src/photos
     
     depends_on:
       - postgres
@@ -62,3 +64,4 @@ volumes:
 
   redis_data:
     name: redis
+  

@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     # FastAPI
     DIRECTORY: PosixPath = Path(__file__).resolve().parent.parent
 
+    DOMEN:str = 'localhost'
+
     PROJECT_TITLE: str
     # FastAPI
     FAST_API_PORT: str
@@ -46,11 +48,16 @@ class Settings(BaseSettings):
     REDIS_USER: str
     REDIS_PASSWORD: str
 
+    NEWS_TOKEN: str
+
     auth_jwt: AuthJWT = AuthJWT()
     
     
     manager: ConnectionManager = ConnectionManager()
 
+    @property
+    def get_domen(self):
+        return f"http://{self.DOMEN}:{self.FAST_API_PORT}{self.FAST_API_PREFIX}"
 
     def redis_url(self, db) -> URL:
         """

@@ -1,9 +1,11 @@
 import json
+from pathlib import Path
 from sqlite3 import IntegrityError
 import uuid
 from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
-from app.api.schemas.chat import ChatCreate, ChatRead
+from app.api.schemas.chat import ChatCreate, ChatRead, RedisChatMessage
 from app.settings import settings
 from .routers import api_router
 from sqlalchemy.exc import IntegrityError
@@ -25,6 +27,10 @@ app.add_middleware(
 )
 
 
+APP_ROOT = Path(__file__).parent.parent.parent
+app.mount("/photos", StaticFiles(directory=APP_ROOT / "photos"), name="photos")
+
+
 
 @app.exception_handler(IntegrityError)
 async def integrity_error_handler(request: Request, exc: IntegrityError):
@@ -38,16 +44,17 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str, chat_id: str, r
     await settings.manager.connect(websocket, chat_id)
     try:
         while True:
-            chat = await redis.exists(f"chat:{chat_id}")
+            chat = await redis.exists(str(chat_id))
             if chat == 0:
                 raise HTTPException(status_code=404, detail="Chat not found")
             message = await websocket.receive_text()
             await settings.manager.broadcast(message, chat_id)
 
-            data = json.dumps({
-                    "user_id": user_id,
-                    "message": message})
+            redis_message: RedisChatMessage = RedisChatMessage(
+                user_id=user_id,
+                message=message
+            )
 
-            await redis.rpush(f"chat:{chat_id}", data)
+            await redis.rpush(chat_id, redis_message.model_dump_json())
     except WebSocketDisconnect:
         settings.manager.disconnect(websocket, chat_id)

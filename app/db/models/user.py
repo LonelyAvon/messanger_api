@@ -26,6 +26,7 @@ from app.db.models.user_chat import UserChat
 
 class User(Base):
     __tablename__ = "users"
+
     id: Mapped[UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
     username: Mapped[str] = mapped_column(String(255), unique=True, default=None)
     password: Mapped[BYTEA] = mapped_column(type_=BYTEA(1024), default=None)

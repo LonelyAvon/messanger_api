@@ -43,3 +43,6 @@ class ChatUser(BaseModel):
     name: str
     patronymic: Optional[str] = None
     photo: Optional[str] = None
+
+    class Config:
+        from_attributes = True 

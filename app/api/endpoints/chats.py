@@ -3,11 +3,11 @@ import json
 from uuid import UUID
 from fastapi import Depends, HTTPException, Request, APIRouter, Response
 from fastapi.security import HTTPBearer
-from app.api.schemas.chat import ChatCreate, ChatMessage, ChatRead
+from app.api.schemas.chat import ChatCreate, ChatInfo, ChatMessage, ChatRead, ChatPreview, RedisChatMessage
 from app.api.schemas.token import Token
-from app.api.schemas.user import UserRead
+from app.api.schemas.user import UserRead, ChatUser
 from app.api.services.chat import ChatService
-from app.api.utils.static import get_chat_name_by_2_persons
+from app.api.services.user import UserService
 from app.db.db import get_session
 from sqlalchemy.ext.asyncio import AsyncSession
 import app.api.authorization.utils.utils as utils
@@ -35,28 +35,89 @@ async def create_chat(
         raise HTTPException(status_code=409, detail="Такой чат уже существует")
 
     created_chat: ChatRead = await ChatService(session).create(chat)
-    chat_message: ChatMessage = ChatMessage(
-        user=None,
+    chat_message: RedisChatMessage = RedisChatMessage(
+        user_id=None,
         message=f"Ваш чат был создан!"
     )
     await redis.rpush(str(created_chat.id), chat_message.model_dump_json())
+    messages = await redis.lrange(str(created_chat.id), 0, -1)
+    for message in messages:
+        print(message.decode("utf-8"))
     await session.commit()
     return created_chat
 
-@router.get("/chats")
-async def get_chats(redis: Redis = Depends(get_redis), user: UserRead = Depends(get_current_user)):
-    chats = await redis.keys("chat:*")
-    return {"chats": [chat.decode("utf-8") for chat in chats]}
+@router.get(
+    "/my",
+    response_model=list[ChatPreview],
+    summary="Получение списка чатов"
+    )
+async def get_chats(
+    redis: Redis = Depends(get_redis), 
+    session: AsyncSession=Depends(get_session), 
+    user: UserRead = Depends(get_current_user)):
 
-@router.get("/messages/{chat_id}")
-async def get_chats(chat_id: UUID ,redis: Redis = Depends(get_redis)):
-    chat = await redis.exists(str(chat_id))
-    if chat == 0:
+    chats: list[ChatRead] = await ChatService(session).get_chats(user_id=user.id)
+
+    answer: list[ChatPreview] = []
+
+    for chat in chats:
+        redis_message = await redis.lrange(str(chat.id), -1, -1)
+        message: RedisChatMessage = RedisChatMessage(**json.loads(redis_message[0]))
+        user_db = await UserService(session).get_user_by_id(user_id=message.user_id)
+
+        if user_db:
+            chat_user: ChatUser = ChatUser.model_validate(user_db)
+        else:
+            chat_user=None
+            
+        chat_message: ChatMessage = ChatMessage(
+            user=chat_user,
+            message=message.message
+
+        )
+        chat_preview: ChatPreview = ChatPreview(
+            id=chat.id,
+            name=chat.name,
+            type=chat.type,
+            last_message=chat_message
+        )
+
+        answer.append(chat_preview)
+
+    return answer
+
+@router.get("/messages/{chat_id}", response_model=ChatInfo)
+async def get_chats(
+    chat_id: UUID, 
+    redis: Redis = Depends(get_redis), 
+    session: AsyncSession=Depends(get_session), 
+    user: UserRead = Depends(get_current_user)):
+
+    redis_chat = await redis.exists(str(chat_id))
+    if redis_chat == 0:
         raise HTTPException(status_code=404, detail="Chat not found")
-    messages = await redis.lrange(str(chat_id), 0, -1)
-    return {"chat_id": chat_id, "messages": [json.loads(message.decode("utf-8")) for message in messages]}
+    redis_messages = await redis.lrange(str(chat_id), 0, -1)
 
-# @app.get("/messages/{chat_id}")
-# async def get_messages(chat_id: str):
-#     messages = await redis.lrange(f"chat:{chat_id}", 0, -1)
-#     return {"chat_id": chat_id, "messages": [message.decode("utf-8") for message in messages]}
+
+    chat: ChatRead = await ChatService(session).get_chat_by_id(chat_id=chat_id)
+    chat_info: ChatInfo = ChatInfo(
+        id=chat.id,
+        name=chat.name,
+        type=chat.type,
+        messages=[]
+    )
+    for message in redis_messages:
+        message: RedisChatMessage = RedisChatMessage(**json.loads(message))
+        user_db = await UserService(session).get_user_by_id(user_id=message.user_id)
+        if user_db:
+            chat_user: ChatUser = ChatUser.model_validate(user_db)
+        else:
+            chat_user=None
+        chat_message: ChatMessage = ChatMessage(
+            user=chat_user,
+            message=message.message
+        )
+        chat_info.messages.append(chat_message)
+    # for message in messages:
+    return chat_info
+

@@ -12,6 +12,9 @@ class ChatService:
     def __init__(self, session: AsyncSession):
         self.session = session
 
+    async def get_chat_by_id(self, chat_id: UUID) -> ChatRead:
+        chat: ChatRead = await ChatRepository(self.session).get_by_id(chat_id)
+        return chat
 
     async def create(self, chat: ChatCreate) -> ChatRead:
         created_chat: ChatRead = await ChatRepository(self.session).create(**chat.model_dump(exclude={"users"}))
@@ -23,4 +26,8 @@ class ChatService:
     async def find_chat_by_users(self, users: list[UUID], name: str) -> ChatRead:
         chat = await ChatRepository(self.session).get_by_users(users=users, name=name)
         return chat
+
+    async def get_chats(self, user_id: UUID) -> list[ChatRead]:
+        chats = await ChatRepository(self.session).get_chats(user_id=user_id)
+        return chats
     
