@@ -32,9 +32,6 @@ app.mount("/photos", StaticFiles(directory=APP_ROOT / "photos"), name="photos")
 
 
 
-@app.exception_handler(IntegrityError)
-async def integrity_error_handler(request: Request, exc: IntegrityError):
-    raise HTTPException(status_code=400, detail=str(exc.orig).split("\nDETAIL:  ")[1])
 
 
 app.include_router(api_router)

@@ -16,6 +16,10 @@ class UserRead(BaseModel):
     surname: str
     name: str
     patronymic: Optional[str] = None
+
+    email: Optional[str]
+    is_verified_email: bool = False
+
     role: Optional[str] = "user"
     is_archived: Optional[bool] = False
     last_visit: Optional[datetime]
@@ -23,13 +27,17 @@ class UserRead(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    id: UUID = None
     username: Optional[str] = None
-    password: Optional[str] = None
     surname: Optional[str] = None
     name: Optional[str] = None
     patronymic: Optional[str] = None
-    is_archived: Optional[bool] = None
+
+    email: Optional[str] = None
+
+
+    def to_dict(self):
+        # Создаем словарь и исключаем поля со значением None
+        return self.model_dump(exclude_none=True)
 
 class UserAuthorization(BaseModel):
     username: str

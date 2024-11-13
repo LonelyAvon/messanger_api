@@ -50,6 +50,9 @@ class Settings(BaseSettings):
 
     NEWS_TOKEN: str
 
+    SMTP_EMAIL: str
+    SMTP_PASSWORD: str
+
     auth_jwt: AuthJWT = AuthJWT()
     
     

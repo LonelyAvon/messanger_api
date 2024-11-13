@@ -2,7 +2,7 @@ from sqlalchemy import select
 from app.db.repositories.abstract_repo import AbstractRepository
 
 from app.db.models.user import User
-from app.api.schemas.user import UserCreate
+from app.api.schemas.user import UserCreate, UserRead
 from app.api.authorization.utils import utils
 
 
@@ -17,3 +17,8 @@ class UserRepository(AbstractRepository):
         query = select(self.model).where(self.model.username == username)
         result = await self._session.execute(query)
         return result.scalars().first()
+    
+    async def update_password(self, password) -> UserRead:
+        password_hash = utils.hash_password(password)
+        user: UserRead = await self.update_one(self.model.id, password=password_hash)
+        return user

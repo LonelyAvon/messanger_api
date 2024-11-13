@@ -33,6 +33,7 @@ async def get_current_user(access_token: HTTPAuthorizationCredentials = Depends(
         updated_user: UserRead = await UserRepository(session).update_one(user.id, last_visit=datetime.now(timezone.utc))
         await UserRepository(session).commit()
         return updated_user
+    
 
 async def refresh_acess_token(request: Request):
     cookies = request.cookies

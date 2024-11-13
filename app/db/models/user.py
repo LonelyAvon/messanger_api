@@ -33,6 +33,10 @@ class User(Base):
     surname: Mapped[str] = mapped_column(String(255), default=None)
     name: Mapped[str] = mapped_column(String(255), default=None)
     patronymic: Mapped[Optional[str]] = mapped_column(String(255), default=None)
+
+    email: Mapped[str] = mapped_column(String(255), unique=True, default=None, nullable=True)
+    is_verified_email: Mapped[bool] = mapped_column(Boolean, server_default='false', default=None)
+
     role: Mapped[str] = mapped_column(String(50), server_default="user", default=None)
     is_archived: Mapped[bool] = mapped_column(Boolean, server_default='false', default=None)
     last_visit: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), default=None)
