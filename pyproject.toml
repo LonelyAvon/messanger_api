@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pattern"
+name = "messanger"
 version = "0.1.0"
 description = ""
 authors = ["LonelyAvon <92423766+LonelyAvon@users.noreply.github.com>"]

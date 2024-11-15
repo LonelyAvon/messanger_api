@@ -19,6 +19,9 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 @router.post("/register", response_model=UserRead)
 async def register(user: UserCreate, session: AsyncSession=Depends(get_session)):
+    find_user: UserRead = await UserRepository(session).get_user_by_username(user.username)
+    if find_user:
+        raise HTTPException(403, "Пользователь с таким именем уже существует")
     user = await UserRepository(session).create(user)
     await UserRepository(session).commit()
     return user

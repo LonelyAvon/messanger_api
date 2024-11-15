@@ -44,8 +44,8 @@ class UserService:
         return user
 
     async def upload_photo(self, user_id: UUID, file: UploadFile):
-        user: UserRead = await UserRepository(self.session).update_one(user_id, photo=settings.get_domen + "/" + file_path)
         file_path = f"photos/{user_id}.{file.filename.split('.')[-1]}"
+        user: UserRead = await UserRepository(self.session).update_one(user_id, photo=settings.get_domen + "/" + file_path)
         async with aiofiles.open(file_path, "wb") as out_file:
             content = await file.read()  # async read
             await out_file.write(content)  # async write
