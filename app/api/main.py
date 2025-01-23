@@ -1,11 +1,15 @@
 import json
 from pathlib import Path
 from sqlite3 import IntegrityError
-import uuid
+from uuid import UUID
 from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 from app.api.schemas.chat import ChatCreate, ChatRead, RedisChatMessage
+from app.api.schemas.chat_message import ChatMessageCreate
+from app.api.services.chat import ChatService
+from app.api.services.chat_message import ChatMessageService
+from app.db.db import get_session
 from app.settings import settings
 from .routers import api_router
 from sqlalchemy.exc import IntegrityError
@@ -36,22 +40,50 @@ app.mount("/photos", StaticFiles(directory=APP_ROOT / "photos"), name="photos")
 
 app.include_router(api_router)
 
-@app.websocket("/ws/{user_id}/{chat_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: str, chat_id: str, redis: Redis = Depends(get_redis)):
-    await settings.manager.connect(websocket, chat_id)
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: dict[str, list[WebSocket]] = {}
+
+    async def connect(self, websocket: WebSocket, chat_id: str):
+        await websocket.accept()
+        if chat_id not in self.active_connections:
+            self.active_connections[chat_id] = []
+        self.active_connections[chat_id].append(websocket)
+
+    def disconnect(self, websocket: WebSocket, chat_id: str):
+        self.active_connections[chat_id].remove(websocket)
+        if not self.active_connections[chat_id]:
+            del self.active_connections[chat_id]
+
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        await websocket.send_text(message)
+
+    async def broadcast(self, data, chat_id: str):
+        for connection in self.active_connections.get(chat_id, []):
+            await connection.send_json(data)
+
+
+class Settings:
+    WS_PREFIX = "/ws/dev"
+    manager = ConnectionManager()
+
+ws_settings = Settings()
+
+@app.websocket(f"{ws_settings.WS_PREFIX}/{{user_id}}/{{chat_id}}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str, chat_id: str, session = Depends(get_session)):
+    await ws_settings.manager.connect(websocket, chat_id)
     try:
         while True:
-            chat = await redis.exists(str(chat_id))
-            if chat == 0:
-                raise HTTPException(status_code=404, detail="Chat not found")
-            message = await websocket.receive_text()
-            await settings.manager.broadcast(message, chat_id)
-
-            redis_message: RedisChatMessage = RedisChatMessage(
+            data = await websocket.receive_text()
+            chat_message = ChatMessageCreate(
+                chat_id=chat_id,
                 user_id=user_id,
-                message=message
+                message=data
             )
-
-            await redis.rpush(chat_id, redis_message.model_dump_json())
+            result = await ChatMessageService(session).create(chat_message)
+            result = dict(result)
+            result['created_time'] = result['created_time'].strftime("%Y-%m-%d %H:%M:%S")
+            await ws_settings.manager.broadcast(result, chat_id)
     except WebSocketDisconnect:
-        settings.manager.disconnect(websocket, chat_id)
+        ws_settings.manager.disconnect(websocket, chat_id)

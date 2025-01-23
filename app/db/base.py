@@ -21,7 +21,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-class DateTimeMixin(MappedAsDataclass):
+class DateTimeMixin():
     """Класс данных для mixin даты и времени"""
 
     created_time: Mapped[datetime] = mapped_column(
@@ -43,11 +43,6 @@ class MappedBase(DeclarativeBase):
     @declared_attr.directive
     def __tablename__(cls) -> str:
         return cls.__name__.lower()
-
-
-class DataClassBase(MappedAsDataclass, MappedBase):
-
-    __abstract__ = True
 
 
 class Base(MappedBase, DateTimeMixin):

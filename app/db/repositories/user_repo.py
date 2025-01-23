@@ -1,4 +1,5 @@
-from sqlalchemy import select
+from uuid import UUID
+from sqlalchemy import func, select
 from app.db.repositories.abstract_repo import AbstractRepository
 
 from app.db.models.user import User
@@ -22,3 +23,25 @@ class UserRepository(AbstractRepository):
         password_hash = utils.hash_password(password)
         user: UserRead = await self.update_one(self.model.id, password=password_hash)
         return user
+    
+    async def find_users(self, query_string: str, user_id: UUID):
+        query = (
+            select(
+                self.model.id, 
+                self.model.username,
+                self.model.surname,
+                self.model.name,
+                self.model.patronymic,
+                self.model.photo
+                )
+            .where(self.model.id != user_id)
+        )
+        if query_string:
+            query = query.where(func.lower(func.concat(
+                self.model.surname, 
+                self.model.name, 
+                self.model.patronymic,
+                self.model.username
+                )).contains(query_string.lower()))
+        result = await self._session.execute(query)
+        return result.mappings().all()

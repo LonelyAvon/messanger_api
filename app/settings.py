@@ -27,12 +27,14 @@ class Settings(BaseSettings):
     # FastAPI
     DIRECTORY: PosixPath = Path(__file__).resolve().parent.parent
 
-    DOMEN:str = 'localhost'
+    DOMEN:str = 'https://test.bytecode.su'
 
     PROJECT_TITLE: str
     # FastAPI
     FAST_API_PORT: str
     FAST_API_PREFIX: str
+
+    WS_PREFIX: str
 
     log_level: LogLevel = LogLevel.INFO
 
@@ -53,14 +55,14 @@ class Settings(BaseSettings):
     SMTP_EMAIL: str
     SMTP_PASSWORD: str
 
-    auth_jwt: AuthJWT = AuthJWT()
+    auth_jwt: AuthJWT = AuthJWT(acces_token_expiration_minutes=2880)
     
     
     manager: ConnectionManager = ConnectionManager()
 
     @property
     def get_domen(self):
-        return f"http://{self.DOMEN}:{self.FAST_API_PORT}{self.FAST_API_PREFIX}"
+        return f"{self.DOMEN}{self.FAST_API_PREFIX}"
 
     def redis_url(self, db) -> URL:
         """

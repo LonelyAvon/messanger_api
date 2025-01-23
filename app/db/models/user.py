@@ -21,7 +21,9 @@ from sqlalchemy.dialects.postgresql import BYTEA
 import uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
+from app.db.models.chat_message import ChatMessage
 from app.db.models.user_chat import UserChat
+from app.db.models.friends import FriendRequests, Friends
 
 
 class User(Base):
@@ -42,4 +44,29 @@ class User(Base):
     last_visit: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), default=None)
     photo: Mapped[Optional[str]] = mapped_column(String(255), default=None)
 
-    user_chats: Mapped[List[UserChat]] = relationship(back_populates="user", default=None) 
+    user_chats: Mapped[List[UserChat]] = relationship(back_populates="user") 
+    user_chat_messages: Mapped[List[ChatMessage]] = relationship(back_populates="user")
+
+    sent_requests: Mapped[List[FriendRequests]] = relationship(
+        foreign_keys="FriendRequests.user_id",
+        back_populates="sender"
+    )
+    
+    received_requests: Mapped[List[FriendRequests]] = relationship(
+        foreign_keys="FriendRequests.friend_id",
+        back_populates="receiver"
+    )
+
+    # Отношения для Friends
+    friends_added: Mapped[List[Friends]] = relationship(
+        foreign_keys="Friends.user_id",
+        back_populates="adder"
+    )
+    
+    friends_of: Mapped[List[Friends]] = relationship(
+        foreign_keys="Friends.friend_id",
+        back_populates="added_friend"
+    )
+
+
+

@@ -17,7 +17,6 @@ class UserChatService:
         user: UserRead = await UserRepository(self.session).get_by_filter_one(id=user_chat.user_id, is_archived=False)
         if user is None:
             raise HTTPException(status_code=404, detail=f"User {user_chat.user_id} not found")
-
         created_user_chat: UserChatRead = await UserChatRepository(self.session).create(**user_chat.model_dump())
 
         return created_user_chat

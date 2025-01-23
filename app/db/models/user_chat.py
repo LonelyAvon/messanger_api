@@ -31,5 +31,5 @@ class UserChat(Base):
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), nullable=False, default=None)
 
     
-    user: Mapped["User"] = relationship(back_populates="user_chats", default=None) # type: ignore
-    chat: Mapped["Chat"] = relationship(back_populates="user_chat", default=None) # type: ignore
+    user: Mapped["User"] = relationship(back_populates="user_chats") # type: ignore
+    chat: Mapped["Chat"] = relationship(back_populates="user_chat") # type: ignore

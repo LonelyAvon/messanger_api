@@ -82,3 +82,7 @@ class UserService:
         user: UserRead = await UserRepository(self.session).update_one(user.id, is_verified_email=True)
         await UserRepository(self.session).commit()
         return user
+
+    async def find_users(self, query: str, user_id: UUID):
+        users = await UserRepository(self.session).find_users(query, user_id)
+        return users

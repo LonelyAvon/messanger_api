@@ -47,7 +47,6 @@ services:
     command: redis-server --requirepass ${REDIS_PASSWORD}
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
-      # test: redis-cli ping
       interval: 1s
       timeout: 3s
       retries: 50
