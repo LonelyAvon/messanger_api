@@ -73,6 +73,51 @@ class ChatRepository(AbstractRepository):
         result = await self._session.execute(query)
         return result.mappings().all()
     
+    async def get_chat(self, chat_id: UUID, user_id: UUID):
+        interlocutor_subq = (
+            select(UserChat.user_id)
+            .where(
+                (UserChat.chat_id == self.model.id) &
+                (UserChat.user_id != user_id)
+            )
+            .correlate(self.model)  # Явная корреляция с основным запросом
+            .scalar_subquery()
+        )
+
+        # Основной запрос
+        query = (
+            select(
+                self.model.id,
+                case(
+                    (self.model.type == "personal",
+                        func.concat_ws(' ', User.surname, User.name, User.patronymic)
+                    ),
+                    else_=self.model.name
+                ).label("chat_name"),
+                case(
+                    (self.model.type == "personal",
+                        User.photo
+                    ),
+                    else_=self.model.name
+                ).label("photo"),
+                self.model.type
+            )
+            .join(UserChat, UserChat.chat_id == self.model.id)
+            .outerjoin(
+                User,
+                and_(
+                    self.model.type == "personal",
+                    User.id == interlocutor_subq
+                )
+            )
+            .where(UserChat.user_id == user_id)
+            .group_by(self.model.id, User.id)
+            .distinct()
+        )
+
+        result = await self._session.execute(query)
+        return result.mappings().first()
+
     async def get_last_message_by_chat_id(self, chat_id: UUID):
         last_message_subquery = (
             select(
@@ -100,18 +145,18 @@ class ChatRepository(AbstractRepository):
         last_message = result.mappings().first()
         return last_message
 
-    async def get_chat(self, chat_id: UUID):
-        query = (
-            select(
-                self.model.id,
-                self.model.name.label("chat_name"),
-            )
-            .where(self.model.id == chat_id)
-        )
+    # async def get_chat(self, chat_id: UUID):
+    #     query = (
+    #         select(
+    #             self.model.id,
+    #             self.model.name.label("chat_name"),
+    #         )
+    #         .where(self.model.id == chat_id)
+    #     )
 
 
-        result = await self._session.execute(query)
-        chat = result.mappings().first()
-        return chat
+    #     result = await self._session.execute(query)
+    #     chat = result.mappings().first()
+    #     return chat
     
 

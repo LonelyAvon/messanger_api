@@ -1,26 +1,24 @@
-import json
 from pathlib import Path
-from sqlite3 import IntegrityError
-from uuid import UUID
-from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
+
+from fastapi import (
+    Depends,
+    FastAPI,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
-from app.api.schemas.chat import ChatCreate, ChatRead, RedisChatMessage
+
 from app.api.schemas.chat_message import ChatMessageCreate
-from app.api.services.chat import ChatService
 from app.api.services.chat_message import ChatMessageService
 from app.db.db import get_session
 from app.settings import settings
+
 from .routers import api_router
-from sqlalchemy.exc import IntegrityError
-from app.redis.redis import get_redis
-from redis.asyncio.client import Redis # type: ignore
 
 app = FastAPI(
-    title=settings.PROJECT_TITLE, 
-    version="1.0.0",
-    root_path=settings.FAST_API_PREFIX
-    )
+    title=settings.PROJECT_TITLE, version="1.0.0", root_path=settings.FAST_API_PREFIX
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -33,9 +31,6 @@ app.add_middleware(
 
 APP_ROOT = Path(__file__).parent.parent.parent
 app.mount("/photos", StaticFiles(directory=APP_ROOT / "photos"), name="photos")
-
-
-
 
 
 app.include_router(api_router)
@@ -65,25 +60,30 @@ class ConnectionManager:
 
 
 class Settings:
-    WS_PREFIX = "/ws/dev"
+    WS_PREFIX = settings.WS_PREFIX
     manager = ConnectionManager()
+
 
 ws_settings = Settings()
 
+
 @app.websocket(f"{ws_settings.WS_PREFIX}/{{user_id}}/{{chat_id}}")
-async def websocket_endpoint(websocket: WebSocket, user_id: str, chat_id: str, session = Depends(get_session)):
+async def websocket_endpoint(
+    websocket: WebSocket, user_id: str, chat_id: str, session=Depends(get_session)
+):
     await ws_settings.manager.connect(websocket, chat_id)
     try:
         while True:
             data = await websocket.receive_text()
             chat_message = ChatMessageCreate(
-                chat_id=chat_id,
-                user_id=user_id,
-                message=data
+                chat_id=chat_id, user_id=user_id, message=data
             )
             result = await ChatMessageService(session).create(chat_message)
             result = dict(result)
-            result['created_time'] = result['created_time'].strftime("%Y-%m-%d %H:%M:%S")
+            result["sender_id"] = str(result["sender_id"])
+            result["created_time"] = result["created_time"].strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
             await ws_settings.manager.broadcast(result, chat_id)
     except WebSocketDisconnect:
         ws_settings.manager.disconnect(websocket, chat_id)
