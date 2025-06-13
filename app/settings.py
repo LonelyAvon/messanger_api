@@ -1,11 +1,14 @@
-from pathlib import Path, PosixPath
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
-from yarl import URL
 from enum import Enum
+from pathlib import Path, PosixPath
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from yarl import URL
 
 from app.api.utils.connection_manager import ConnectionManager
+
 from .api.authorization.settings import AuthJWT
+
 
 class LogLevel(str, Enum):
     """Possible log levels."""
@@ -17,6 +20,7 @@ class LogLevel(str, Enum):
     ERROR = "ERROR"
     FATAL = "FATAL"
 
+
 class Settings(BaseSettings):
     """
     Application settings.
@@ -24,10 +28,11 @@ class Settings(BaseSettings):
     These parameters can be configured
     with environment variables.
     """
+
     # FastAPI
     DIRECTORY: PosixPath = Path(__file__).resolve().parent.parent
 
-    DOMEN:str = 'https://test.bytecode.su'
+    DOMEN: str = "https://test.bytecode.su"
 
     PROJECT_TITLE: str
     # FastAPI
@@ -39,11 +44,11 @@ class Settings(BaseSettings):
     log_level: LogLevel = LogLevel.INFO
 
     # POSTGRES
-    POSTGRES_HOST: str 
+    POSTGRES_HOST: str
     POSTGRES_PORT: int
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
-    POSTGRES_DB: str 
+    POSTGRES_DB: str
 
     REDIS_HOST: str
     REDIS_PORT: int
@@ -55,9 +60,17 @@ class Settings(BaseSettings):
     SMTP_EMAIL: str
     SMTP_PASSWORD: str
 
+    MINIO_ROOT_USER: str
+    MINIO_ROOT_PASSWORD: str
+
+    MINIO_ACCESS_KEY: str
+    MINIO_SECRET_KEY: str
+    MINIO_HOST: str
+    MINIO_API_PORT: str
+    MINIO_UI_PORT: str
+
     auth_jwt: AuthJWT = AuthJWT(acces_token_expiration_minutes=2880)
-    
-    
+
     manager: ConnectionManager = ConnectionManager()
 
     @property
@@ -94,10 +107,11 @@ class Settings(BaseSettings):
             password=self.POSTGRES_PASSWORD,
             path=f"/{self.POSTGRES_DB}",
         )
-    
+
     model_config = SettingsConfigDict(
         env_file=".env.develop",
         env_file_encoding="utf-8",
     )
+
 
 settings = Settings()

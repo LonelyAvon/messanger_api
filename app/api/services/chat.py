@@ -57,14 +57,15 @@ class ChatService:
             response_chat.append(chat_preview)
         return response_chat
 
-    async def get_messages(self, chat_id: UUID, user_id: UUID):
-        chat = await ChatRepository(self.session).get_chat(
-            chat_id=chat_id, user_id=user_id
-        )
-        messages: list[ChatMessage] = await ChatMessageRepository(
-            self.session
-        ).get_chat_messages(chat_id=chat_id)
-        chat_info: ChatInfo = ChatInfo(
-            id=chat.id, chat_name=chat.chat_name, photo=chat.photo, messages=messages
-        )
-        return chat_info
+    async def get_messages(self, chat_id: UUID):
+        # chat = await ChatRepository(self.session).get_chat(
+        #     chat_id=chat_id, user_id=user_id
+        # )
+        # messages: list[ChatMessage] = await ChatMessageRepository(
+        #     self.session
+        # ).get_chat_messages(chat_id=chat_id)
+        # chat_info: ChatInfo = ChatInfo(
+        #     id=chat.id, chat_name=chat.chat_name, photo=chat.photo, messages=messages
+        # )
+        messages = await ChatRepository(self.session).get_chat(chat_id)
+        return messages

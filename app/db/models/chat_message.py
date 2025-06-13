@@ -33,6 +33,7 @@ class ChatMessage(Base):
         ForeignKey("users.id"), nullable=False, default=None
     )
     message: Mapped[str] = mapped_column(String(2048), default=None)
+    file: Mapped[Optional[str]] = mapped_column(String(255), default=None)
 
     user: Mapped["User"] = relationship(back_populates="user_chat_messages")  # type: ignore  # noqa: F821
     chat: Mapped["Chat"] = relationship(back_populates="user_chat_messages")  # type: ignore  # noqa: F821

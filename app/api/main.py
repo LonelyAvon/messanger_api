@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from fastapi import (
@@ -75,15 +76,17 @@ async def websocket_endpoint(
     try:
         while True:
             data = await websocket.receive_text()
+            data = json.loads(data)
             chat_message = ChatMessageCreate(
-                chat_id=chat_id, user_id=user_id, message=data
+                chat_id=chat_id,
+                user_id=user_id,
+                message=data["message"],
+                file=data.get("file"),
             )
             result = await ChatMessageService(session).create(chat_message)
-            result = dict(result)
-            result["sender_id"] = str(result["sender_id"])
-            result["created_time"] = result["created_time"].strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
+            result = result.model_dump()
+            result["id"] = str(result["id"])
+            result["user"]["id"] = str(result["user"]["id"])
             await ws_settings.manager.broadcast(result, chat_id)
     except WebSocketDisconnect:
         ws_settings.manager.disconnect(websocket, chat_id)

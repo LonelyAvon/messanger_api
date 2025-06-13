@@ -20,7 +20,7 @@ class Photo(BaseModel):
 class UserCreate(BaseModel):
     username: str
     password: str
-    surname: strц
+    surname: str
     name: str
     patronymic: Optional[str] = None
 

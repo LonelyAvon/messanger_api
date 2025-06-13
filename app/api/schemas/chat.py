@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Literal, Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from app.api.schemas.user import ChatUser
 
@@ -58,3 +58,18 @@ class ChatInfo(BaseModel):
     chat_name: str
     photo: Optional[str]
     messages: Optional[list[ChatMessageWithPhoto]]
+
+
+class ChatMessageUserRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    message: str
+    file: Optional[str] = None
+    created_time: str
+    user: ChatUser
+
+    @field_validator("created_time", mode="before")
+    def validate_created_time(cls, value):
+        # 17.05 10:04
+        return datetime.strftime(value, "%m.%d %H:%M")

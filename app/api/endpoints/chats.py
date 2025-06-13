@@ -9,6 +9,7 @@ from app.api.authorization.func import (
 from app.api.schemas.chat import (
     ChatCreate,
     ChatInfo,
+    ChatMessageUserRead,
     ChatPreview,
     ChatRead,
 )
@@ -43,12 +44,12 @@ async def get_chats(
 
 @router.get(
     "/messages/{chat_id}",
-    response_model=ChatInfo,
+    response_model=list[ChatMessageUserRead],
 )
 async def get_chats_messages(
     chat_id: UUID,
     session: AsyncSession = Depends(get_session),
     user: UserRead = Depends(get_current_user),
 ):
-    messages = await ChatService(session).get_messages(chat_id=chat_id, user_id=user.id)
+    messages = await ChatService(session).get_messages(chat_id=chat_id)
     return messages
